@@ -74,7 +74,6 @@ mv *.txt backup/                      # Move all .txt files to backup folder
 > 💡 If the destination is an existing folder, `mv` moves the file(s) into it.  
 > If the destination does not exist, it acts as a rename.
 
----
 
 ### 🔹 cp – Copy files and folders
 ```bash
@@ -90,7 +89,7 @@ cp *.jpg images/                      # Copy all .jpg files to images/
 | `-v`   | Verbose: show files being copied |
 | `-u`   | Only copy if source is newer   |
 
----
+
 
 ### 🔹 rm – Delete files and directories
 ```bash
@@ -101,7 +100,7 @@ rm -rf folder/                        # Force remove folder and ignore errors
 
 > ⚠️ Be careful with `rm -rf` — there’s no undo!
 
----
+
 
 ### 🔹 rename – Rename multiple files (batch renaming)
 ```bash
@@ -112,7 +111,7 @@ rename 's/-/_/' *                     # Replace dashes with underscores in filen
 > On Ubuntu, install it with `sudo apt install rename`.  
 > It uses Perl-style regex patterns.
 
----
+
 
 ### 🔹 file – Check file type
 ```bash
@@ -121,11 +120,50 @@ file myfile                          # Tells you what kind of file it is
 
 > Useful when dealing with unknown or downloaded files.
 
----
+
 
 ### 🛠 Tip:
 - Combine with `find`, `xargs`, and wildcards for mass operations.
 - Always test on dummy files when doing batch renames or deletes!
+
+---
+
+## 🔍 Text Searching with grep
+
+### 🔹 Basic usage
+```bash
+grep "hello" file.txt                # Search for lines containing 'hello'
+grep -r "main()" src/               # Recursive search in directory
+grep -n "error" file.txt            # Show line numbers with matches
+grep -v "DEBUG" file.txt            # Invert match: show lines that DO NOT contain "DEBUG"
+```
+
+
+
+### 🔹 Useful Flags
+| Flag  | Description |
+|-------|-------------|
+| `-i`  | Ignore case (match "ERROR", "error", etc.) |
+| `-r`  | Recursive search in all subfolders |
+| `-n`  | Show line numbers |
+| `-v`  | Invert match (show lines that do NOT match) |
+| `-E`  | Enable extended regex (e.g. `|`, `+`, `?` without backslashes) |
+
+
+
+### 🔹 Combined Example: `-iE`
+```bash
+grep -iE "fail|error|critical" logs.txt
+```
+- `-i` makes it case-insensitive
+- `-E` enables extended regular expressions
+- Matches any line with **fail**, **error**, or **critical** (in any casing)
+
+
+
+> 💡 Tip: Combine with `less` or `tail -f` for log monitoring  
+> Example: `tail -f log.txt | grep -i error`
+
 
 ---
 
@@ -195,7 +233,7 @@ docker run -v myvolume:/data image               # Mount volume
 docker run -v $(pwd)/data:/app/data image        # Bind local folder into container
 ```
 
----
+
 
 ## ✅ Tips
 - Use `Ctrl + R` in terminal to search command history  
@@ -270,7 +308,6 @@ curl -X POST -d "key=value" http://example.com # POST request with data
 
 > 💡 `curl` is very script-friendly and commonly used in APIs, automation, and Docker setups.
 
----
 
 ### 🔹 wget – Download files from the internet
 ```bash
@@ -280,7 +317,7 @@ wget -c http://example.com/file.zip    # Continue interrupted download
 
 > Unlike `curl`, `wget` is mainly for downloading files and supports recursive downloads with `-r`.
 
----
+
 
 ### 🔹 ping – Test connectivity to a host
 ```bash
@@ -288,7 +325,7 @@ ping google.com                        # Check if host is reachable
 ping -c 4 google.com                   # Limit to 4 packets
 ```
 
----
+
 
 ### 🔹 ifconfig / ip – Network configuration
 ```bash
@@ -299,7 +336,6 @@ ip r                                   # Show routing table
 
 > On modern Linux (Ubuntu), prefer `ip` commands over `ifconfig`.
 
----
 
 ### 🔹 netstat / ss – Check open ports and sockets
 ```bash
@@ -307,7 +343,7 @@ netstat -tuln                          # List listening ports (requires `net-too
 ss -tuln                               # Faster and more modern replacement for netstat
 ```
 
----
+
 
 ### 🔹 nslookup / dig – DNS tools
 ```bash
@@ -315,7 +351,7 @@ nslookup example.com                   # Get IP address of a domain
 dig example.com                        # More detailed DNS lookup
 ```
 
----
+
 
 ### 🔹 traceroute – Show the path to a remote host
 ```bash
@@ -324,7 +360,7 @@ traceroute example.com                 # Trace the route packets take
 
 > Might require installation: `sudo apt install traceroute`
 
----
+
 
 ### 🛠 Tip:
 Use `curl` or `wget` in Dockerfiles, bash scripts, or system setup scripts to automate downloads and API calls.
