@@ -60,6 +60,72 @@ sudo apt upgrade        # Upgrade installed packages
 sudo apt install pkg    # Install a package
 sudo apt remove pkg     # Remove a package
 ```
+---
+## 📦 File Manipulation (mv, cp, rename, etc.)
+
+### 🔹 mv – Move or Rename files/folders
+```bash
+mv file1.txt folder/                   # Move file1.txt into folder/
+mv oldname.txt newname.txt            # Rename a file
+mv pydicom-data-master data           # Rename/move folder to "data"
+mv *.txt backup/                      # Move all .txt files to backup folder
+```
+
+> 💡 If the destination is an existing folder, `mv` moves the file(s) into it.  
+> If the destination does not exist, it acts as a rename.
+
+---
+
+### 🔹 cp – Copy files and folders
+```bash
+cp file.txt copy.txt                  # Copy a file
+cp -r dir1 dir2                       # Copy a folder recursively
+cp *.jpg images/                      # Copy all .jpg files to images/
+```
+
+#### 🔧 cp Common Flags
+| Flag   | Description                    |
+|--------|--------------------------------|
+| `-r`   | Recursively copy directories   |
+| `-v`   | Verbose: show files being copied |
+| `-u`   | Only copy if source is newer   |
+
+---
+
+### 🔹 rm – Delete files and directories
+```bash
+rm file.txt                           # Remove a file
+rm -r folder/                         # Remove a folder and its contents
+rm -rf folder/                        # Force remove folder and ignore errors
+```
+
+> ⚠️ Be careful with `rm -rf` — there’s no undo!
+
+---
+
+### 🔹 rename – Rename multiple files (batch renaming)
+```bash
+rename 's/.txt/.bak/' *.txt           # Rename all .txt to .bak
+rename 's/-/_/' *                     # Replace dashes with underscores in filenames
+```
+
+> On Ubuntu, install it with `sudo apt install rename`.  
+> It uses Perl-style regex patterns.
+
+---
+
+### 🔹 file – Check file type
+```bash
+file myfile                          # Tells you what kind of file it is
+```
+
+> Useful when dealing with unknown or downloaded files.
+
+---
+
+### 🛠 Tip:
+- Combine with `find`, `xargs`, and wildcards for mass operations.
+- Always test on dummy files when doing batch renames or deletes!
 
 ---
 
