@@ -180,10 +180,93 @@ docker run -v $(pwd)/data:/app/data image        # Bind local folder into contai
 
 ---
 
+## 🌐 Networking & Data Transfer (curl, wget, ping, etc.)
+
+### 🔹 curl – Transfer data from or to a server
+```bash
+curl http://example.com                # Fetch a webpage (GET request)
+curl -O http://example.com/file.zip    # Save file with original name
+curl -o myfile.zip http://example.com/file.zip  # Save with custom name
+curl -L http://short.url               # Follow redirects (like shortened URLs)
+curl -u user:pass http://example.com   # Basic authentication
+curl -X POST -d "key=value" http://example.com # POST request with data
+```
+
+#### 🔧 curl Common Flags
+| Flag    | Description |
+|---------|-------------|
+| `-L`    | Follow redirects (Location headers) |
+| `-o`    | Write output to a named file |
+| `-O`    | Save file with original name |
+| `-u`    | Provide username:password |
+| `-X`    | Specify request method (GET, POST, PUT, etc.) |
+| `-d`    | Send data in request body |
+
+> 💡 `curl` is very script-friendly and commonly used in APIs, automation, and Docker setups.
+
+---
+
+### 🔹 wget – Download files from the internet
+```bash
+wget http://example.com/file.zip       # Download file
+wget -c http://example.com/file.zip    # Continue interrupted download
+```
+
+> Unlike `curl`, `wget` is mainly for downloading files and supports recursive downloads with `-r`.
+
+---
+
+### 🔹 ping – Test connectivity to a host
+```bash
+ping google.com                        # Check if host is reachable
+ping -c 4 google.com                   # Limit to 4 packets
+```
+
+---
+
+### 🔹 ifconfig / ip – Network configuration
+```bash
+ifconfig                               # Show network interfaces (older, may need install)
+ip a                                   # Modern alternative to ifconfig
+ip r                                   # Show routing table
+```
+
+> On modern Linux (Ubuntu), prefer `ip` commands over `ifconfig`.
+
+---
+
+### 🔹 netstat / ss – Check open ports and sockets
+```bash
+netstat -tuln                          # List listening ports (requires `net-tools`)
+ss -tuln                               # Faster and more modern replacement for netstat
+```
+
+---
+
+### 🔹 nslookup / dig – DNS tools
+```bash
+nslookup example.com                   # Get IP address of a domain
+dig example.com                        # More detailed DNS lookup
+```
+
+---
+
+### 🔹 traceroute – Show the path to a remote host
+```bash
+traceroute example.com                 # Trace the route packets take
+```
+
+> Might require installation: `sudo apt install traceroute`
+
+---
+
+### 🛠 Tip:
+Use `curl` or `wget` in Dockerfiles, bash scripts, or system setup scripts to automate downloads and API calls.
+
+
 ## 📝 To Add Later
 - Docker Compose  
 - Systemd basics  
-- Networking (`curl`, `ifconfig`, `ip`)  
 - SSH & SCP  
 - Git essentials  
 - Bash functions & aliases  
