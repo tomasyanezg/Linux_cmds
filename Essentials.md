@@ -151,6 +151,16 @@ docker run -v $(pwd)/data:/app/data image        # Bind local folder into contai
 | Flag           | Used In         | Description |
 |----------------|------------------|-------------|
 | `-p`           | `mkdir -p`       | Create parent directories as needed (no error if exists) |
+
+> 💡 **What does "parent directories" mean in `mkdir -p`?**  
+> It refers to all folders in the path that are **above** the one you're creating.  
+> Example:  
+> ```bash
+> mkdir -p ~/projects/dicom_test/data/incoming
+> ```  
+> If `projects`, `dicom_test`, or `data` don't exist, `-p` will create them automatically.  
+> Without `-p`, this would fail unless the full path already exists.
+
 | `+x`           | `chmod +x`       | Adds executable permission to a file |
 | `-r`           | `rm -r`, `grep -r` | Recursive: apply to folders/subfolders |
 | `-f`           | `rm -f`, `tail -f` | Force remove / Follow file in real-time |
