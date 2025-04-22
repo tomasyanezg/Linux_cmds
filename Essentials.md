@@ -138,6 +138,38 @@ docker run -v $(pwd)/data:/app/data image        # Bind local folder into contai
 
 ---
 
+## 🧩 Common Flags & Parameters
+
+### 🔹 General Shell & Bash
+| Symbol / Flag | Meaning |
+|---------------|---------|
+| `~`           | User's home directory (e.g. `/home/username`) |
+| `-` (dash)    | Refers to the previous working directory when used with `cd -` |
+| `*`           | Wildcard for any number of characters (e.g., `*.txt`) |
+
+### 🔹 File Commands
+| Flag           | Used In         | Description |
+|----------------|------------------|-------------|
+| `-p`           | `mkdir -p`       | Create parent directories as needed (no error if exists) |
+| `+x`           | `chmod +x`       | Adds executable permission to a file |
+| `-r`           | `rm -r`, `grep -r` | Recursive: apply to folders/subfolders |
+| `-f`           | `rm -f`, `tail -f` | Force remove / Follow file in real-time |
+| `-n`           | `cat -n`         | Number output lines |
+| `-o`           | `curl -o`        | Write output to file instead of stdout |
+| `-L`           | `curl -L`        | Follow redirects (Location headers) |
+
+### 🔹 Docker
+| Flag           | Used In                     | Description |
+|----------------|------------------------------|-------------|
+| `-d`           | `docker run -d`              | Run container in detached mode (in background) |
+| `-p`           | `docker run -p 8080:80`      | Map host port to container port (HOST:CONTAINER) |
+| `--name`       | `docker run --name`          | Assign a custom name to the container |
+| `-v`           | `docker run -v ...`          | Mount a volume or bind a directory |
+| `-it`          | `docker run -it`             | Run with interactive terminal support |
+| `exec -it`     | `docker exec -it`            | Interact with a running container's shell |
+
+---
+
 ## 📝 To Add Later
 - Docker Compose  
 - Systemd basics  
