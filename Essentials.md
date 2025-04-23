@@ -365,6 +365,87 @@ traceroute example.com                 # Trace the route packets take
 ### 🛠 Tip:
 Use `curl` or `wget` in Dockerfiles, bash scripts, or system setup scripts to automate downloads and API calls.
 
+---
+
+## 🔌 Scheduled Power Management (shutdown & rtcwake)
+
+Useful for automating daily power cycles (e.g. shut down at midnight, wake up at 08:00).
+
+### 🔹 rtcwake – Schedule automatic wake-up
+```bash
+sudo rtcwake -m off -s 60
+# Shut down and auto-start after 60 seconds
+
+sudo rtcwake -m off -t $(date -d '08:00 tomorrow' +%s)
+# Shut down now and wake at 08:00 tomorrow
+
+sudo rtcwake -m off -t $(date -d '+30 minutes' +%s)
+# Shut down now and wake in 30 minutes
+```
+
+- `-m off`: power off completely
+- `-s 60`: wake up after 60 seconds
+- `-t <timestamp>`: UNIX time for scheduled wake
+
+> 💡 Use `man rtcwake` to see available modes: `standby`, `mem`, `disk`, `off`
+
+
+### 🔹 Check RTC capabilities
+```bash
+cat /proc/driver/rtc
+```
+
+Check if `alarm_IRQ` is `yes`, and verify the current RTC time and alarms.
+
+### 🔹 Create a daily shutdown + wakeup script
+
+`/usr/local/bin/wakeup_shutdown.sh`:
+
+```bash
+#!/bin/bash
+LOGFILE="/var/log/my_wakeup.log"
+
+{
+  echo "==== $(date) ===="
+  echo "Scheduled wakeup at 08:00 tomorrow"
+  echo "UNIX timestamp: $(date -d '08:00 tomorrow' +%s)"
+  timedatectl
+} >> "$LOGFILE"
+
+# Shut down and wake later
+/usr/sbin/rtcwake -m off -t $(date -d '08:00 tomorrow' +%s)
+```
+
+Make it executable:
+```bash
+sudo chmod +x /usr/local/bin/wakeup_shutdown.sh
+```
+
+
+### 🔹 Schedule via `cron` (as root)
+```bash
+sudo crontab -e
+```
+
+Add this line for midnight daily shutdown + 08:00 wake:
+```cron
+0 0 * * * /usr/local/bin/wakeup_shutdown.sh
+```
+
+💡 For testing every 2 mins:
+```cron
+*/2 * * * * /usr/local/bin/wakeup_shutdown.sh
+```
+
+💡 To wake in 30 mins instead:
+Edit script line:
+```bash
+/usr/sbin/rtcwake -m off -t $(date -d '+30 minutes' +%s)
+```
+
+
+> ✅ This section helps automate daily uptime cycles and power saving for servers, home labs, and laptops.
+
 
 ## 📝 To Add Later
 - Docker Compose  
