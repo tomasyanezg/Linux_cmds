@@ -95,15 +95,20 @@ storescu 127.0.0.1 4242 ~/dicom_test/data/693_UNCI.dcm
 
 # 🧪 DICOM ANALYSIS SCRIPT
 
-## Create `dicom_info.sh`:
+## Create `dicom_info.sh`
 ```bash
 nano ~/dicom_test/dicom_info.sh
 ```
 
-Paste:
+### Paste the following script:
 ```bash
 #!/bin/bash
 
+# ==========================================
+# DICOM Tag Inspector & Compatibility Checker
+# ==========================================
+
+# ✅ 1. Validate input
 if [ -z "$1" ]; then
   echo "❌ Usage: $0 <dicom-file>"
   exit 1
@@ -116,13 +121,19 @@ if [ ! -f "$DICOM_FILE" ]; then
   exit 2
 fi
 
-TRANSFER_SYNTAX=$(dcmdump "$DICOM_FILE" | grep 'Transfer Syntax UID' | awk '{for(i=1;i<=NF;i++){if($i ~ /\=/){print $i}}}' | cut -d= -f2)
+# ✅ 2. Extract metadata using dcmdump
+
+# Extract Transfer Syntax (raw value from tag 0002,0010)
+TRANSFER_SYNTAX=$(dcmdump "$DICOM_FILE" | awk '/\(0002,0010\)/ {gsub(/^.*= */, "", $0); print $1; exit}')
+
+# Other useful DICOM tags
 MODALITY=$(dcmdump "$DICOM_FILE" | grep '(0008,0060)' | awk -F'[][]' '{print $2}')
 ROWS=$(dcmdump "$DICOM_FILE" | grep '(0028,0010)' | awk '{print $3}')
 COLUMNS=$(dcmdump "$DICOM_FILE" | grep '(0028,0011)' | awk '{print $3}')
 PATIENT_NAME=$(dcmdump "$DICOM_FILE" | grep '(0010,0010)' | awk -F'[][]' '{print $2}')
 PIXEL_SPACING=$(dcmdump "$DICOM_FILE" | grep '(0028,0030)' | awk -F'[][]' '{print $2}')
 
+# ✅ 3. Output formatted info
 echo "🧾 DICOM File Info: $DICOM_FILE"
 echo "-------------------------------"
 echo "📌 Modality:        ${MODALITY:-Unknown}"
@@ -132,6 +143,7 @@ echo "🧬 Patient Name:    ${PATIENT_NAME:-(anonymized)}"
 echo "🔄 Transfer Syntax: ${TRANSFER_SYNTAX:-Unknown}"
 echo "-------------------------------"
 
+# ✅ 4. Check Transfer Syntax Compatibility
 if [[ "$TRANSFER_SYNTAX" == "1.2.840.10008.1.2.1" || "$TRANSFER_SYNTAX" == "LittleEndianExplicit" ]]; then
   echo "✅ Compatible: Explicit VR Little Endian"
 else
@@ -139,14 +151,28 @@ else
 fi
 ```
 
-Make executable:
+
+## Make it executable:
 ```bash
 chmod +x ~/dicom_test/dicom_info.sh
 ```
 
-Run:
+## Run it on a DICOM file:
 ```bash
 ~/dicom_test/dicom_info.sh ~/dicom_test/data/693_UNCI.dcm
+```
+
+### ✅ Sample Output:
+```
+🧾 DICOM File Info: ./data/693_UNCI.dcm
+-------------------------------
+📌 Modality:        CT
+🖼️  Resolution:      512 x 512 pixels
+📐 Pixel Spacing:   0.478516\0.478516
+🧬 Patient Name:    CQ500-CT-310
+🔄 Transfer Syntax: LittleEndianExplicit
+-------------------------------
+✅ Compatible: Explicit VR Little Endian
 ```
 
 ---
