@@ -369,7 +369,7 @@ Use `curl` or `wget` in Dockerfiles, bash scripts, or system setup scripts to au
 
 ## 🔌 Scheduled Power Management (shutdown & rtcwake)
 
-Useful for automating daily power cycles (e.g. shut down at midnight, wake up at 08:00).
+Automate daily power cycles — shut down at night and wake up in the morning — with full logging.
 
 ### 🔹 rtcwake – Schedule automatic wake-up
 ```bash
@@ -383,11 +383,9 @@ sudo rtcwake -m off -t $(date -d '+30 minutes' +%s)
 # Shut down now and wake in 30 minutes
 ```
 
-- `-m off`: power off completely
-- `-s 60`: wake up after 60 seconds
-- `-t <timestamp>`: UNIX time for scheduled wake
-
-> 💡 Use `man rtcwake` to see available modes: `standby`, `mem`, `disk`, `off`
+> `-m off` = poweroff  
+> `-t` = use a UNIX timestamp  
+> `-s` = use seconds (e.g. 60 = 1 min)  
 
 
 ### 🔹 Check RTC capabilities
@@ -395,11 +393,12 @@ sudo rtcwake -m off -t $(date -d '+30 minutes' +%s)
 cat /proc/driver/rtc
 ```
 
-Check if `alarm_IRQ` is `yes`, and verify the current RTC time and alarms.
+Check for `alarm_IRQ: yes` and inspect current RTC and alarm time.
 
-### 🔹 Create a daily shutdown + wakeup script
 
-`/usr/local/bin/wakeup_shutdown.sh`:
+### 🔹 Daily shutdown + wake-up script
+
+**File:** `/usr/local/bin/wakeup_shutdown.sh`
 
 ```bash
 #!/bin/bash
@@ -412,39 +411,83 @@ LOGFILE="/var/log/my_wakeup.log"
   timedatectl
 } >> "$LOGFILE"
 
-# Shut down and wake later
 /usr/sbin/rtcwake -m off -t $(date -d '08:00 tomorrow' +%s)
 ```
 
-Make it executable:
+Make executable:
 ```bash
 sudo chmod +x /usr/local/bin/wakeup_shutdown.sh
 ```
 
 
-### 🔹 Schedule via `cron` (as root)
+### 🔹 Root cron job (shutdown at midnight)
 ```bash
 sudo crontab -e
 ```
 
-Add this line for midnight daily shutdown + 08:00 wake:
+Add:
 ```cron
 0 0 * * * /usr/local/bin/wakeup_shutdown.sh
 ```
 
-💡 For testing every 2 mins:
-```cron
-*/2 * * * * /usr/local/bin/wakeup_shutdown.sh
-```
 
-💡 To wake in 30 mins instead:
-Edit script line:
+### 🔹 Boot-time logger (record actual wake-up time)
+
+**File:** `/usr/local/bin/log_wakeup_time.sh`
+
 ```bash
-/usr/sbin/rtcwake -m off -t $(date -d '+30 minutes' +%s)
+#!/bin/bash
+
+LOGFILE="/var/log/my_wakeup.log"
+
+{
+  echo "==== System woke up at: $(date) ===="
+  timedatectl
+} >> "$LOGFILE"
+```
+
+Make executable:
+```bash
+sudo chmod +x /usr/local/bin/log_wakeup_time.sh
 ```
 
 
-> ✅ This section helps automate daily uptime cycles and power saving for servers, home labs, and laptops.
+### 🔹 systemd service to log wake-up time
+
+**File:** `/etc/systemd/system/log-wakeup.service`
+
+```ini
+[Unit]
+Description=Log system wake-up time to my_wakeup.log
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/log_wakeup_time.sh
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable it:
+```bash
+sudo systemctl enable log-wakeup.service
+```
+
+---
+
+### ✅ Result
+
+You now have:
+- Daily **shutdown + wake** scheduled via `cron` + `rtcwake`
+- Logging of:
+  - When the system was **told to shut down**
+  - When it **actually woke up**
+  - System time and timezone info
+- All entries in `/var/log/my_wakeup.log`
+
+
+>  This section helps automate daily uptime cycles and power saving for servers, home labs, and laptops.
 
 
 ## 📝 To Add Later
