@@ -263,6 +263,7 @@ MODALITY=$(dcmdump "$DICOM_FILE" | grep '(0008,0060)' | awk -F'[][]' '{print $2}
 ROWS=$(dcmdump "$DICOM_FILE" | grep '(0028,0010)' | awk '{print $3}')
 COLUMNS=$(dcmdump "$DICOM_FILE" | grep '(0028,0011)' | awk '{print $3}')
 PATIENT_NAME=$(dcmdump "$DICOM_FILE" | grep '(0010,0010)' | awk -F'[][]' '{print $2}')
+PATIENT_ID=$(dcmdump "$DICOM_FILE" | grep '(0010,0020)' | awk -F'[][]' '{print $2}')
 PIXEL_SPACING=$(dcmdump "$DICOM_FILE" | grep '(0028,0030)' | awk -F'[][]' '{print $2}')
 
 # ✅ 3. Output formatted info
@@ -272,14 +273,20 @@ echo "📌 Modality:        ${MODALITY:-Unknown}"
 echo "🖼️  Resolution:      ${ROWS:-?} x ${COLUMNS:-?} pixels"
 echo "📐 Pixel Spacing:   ${PIXEL_SPACING:-Unknown}"
 echo "🧬 Patient Name:    ${PATIENT_NAME:-(anonymized)}"
+echo "🆔 Patient ID:      ${PATIENT_ID:-Unknown}"
 echo "🔄 Transfer Syntax: ${TRANSFER_SYNTAX:-Unknown}"
 echo "-------------------------------"
 
 # ✅ 4. Check Transfer Syntax Compatibility
-if [[ "$TRANSFER_SYNTAX" == "1.2.840.10008.1.2.1" || "$TRANSFER_SYNTAX" == "LittleEndianExplicit" ]]; then
-  echo "✅ Compatible: Explicit VR Little Endian"
+if [[ "$TRANSFER_SYNTAX" == "1.2.840.10008.1.2.1" || \
+      "$TRANSFER_SYNTAX" == "LittleEndianExplicit" || \
+      "$TRANSFER_SYNTAX" == "1.2.840.10008.1.2.2" || \
+      "$TRANSFER_SYNTAX" == "BigEndianExplicit" || \
+      "$TRANSFER_SYNTAX" == "1.2.840.10008.1.2"   || \
+      "$TRANSFER_SYNTAX" == "ImplicitVRLittleEndian" ]]; then
+  echo "✅ Compatible: Standard Uncompressed Transfer Syntax (Little/Big Endian, Implicit/Explicit)"
 else
-  echo "⚠️  Unsupported Transfer Syntax for Orthanc (might fail to send)"
+  echo "⚠️  Possibly Unsupported Transfer Syntax (e.g., JPEG, JPEG2000, RLE)"
 fi
 ```
 
@@ -288,6 +295,7 @@ fi
 ```bash
 chmod +x ~/dicom_test/dicom_info.sh
 ```
+
 
 ## Run it on a DICOM file:
 ```bash
@@ -302,9 +310,10 @@ chmod +x ~/dicom_test/dicom_info.sh
 🖼️  Resolution:      512 x 512 pixels
 📐 Pixel Spacing:   0.478516\0.478516
 🧬 Patient Name:    CQ500-CT-310
+🆔 Patient ID:      CQ500-CT-310
 🔄 Transfer Syntax: LittleEndianExplicit
 -------------------------------
-✅ Compatible: Explicit VR Little Endian
+✅ Compatible: Standard Uncompressed Transfer Syntax (Little/Big Endian, Implicit/Explicit)
 ```
 
 ---
