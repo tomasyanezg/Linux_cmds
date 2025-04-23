@@ -64,16 +64,17 @@ docker update --restart unless-stopped orthanc
 ---
 
 # 🧰 DICOM TOOLS INSTALLATION
-
 ```bash
 sudo apt install -y dcmtk gdcm
 ```
 
-Tools installed:
-- `storescu` – Send DICOM files
-- `dcmdump` – View DICOM tags
-- `dcmodify` – Modify DICOM headers
-- `gdcmconv` – Convert or decompress DICOM files
+### Tools installed:
+| Tool       | Description                                      |
+|------------|--------------------------------------------------|
+| `storescu` | Send (C-STORE) DICOM files to a PACS             |
+| `dcmdump`  | View full metadata of a DICOM file               |
+| `dcmodify` | Edit DICOM headers (patient name, ID, etc.)      |
+| `gdcmconv` | Convert between DICOM transfer syntaxes          |
 
 ---
 
@@ -86,9 +87,140 @@ curl -LO https://github.com/pydicom/pydicom/releases/download/v1.2/MR_small.dcm
 cp MR_small.dcm 693_UNCI.dcm
 ```
 
-## Send File to Orthanc
+## Send File to Orthanc (C-STORE)
 ```bash
 storescu 127.0.0.1 4242 ~/dicom_test/data/693_UNCI.dcm
+```
+
+
+
+# 🔧 DICOM & ORTHANC COMMAND REFERENCE
+
+## 📤 Send or Upload a DICOM File to Orthanc
+
+### Using DICOM (storescu):
+```bash
+storescu 127.0.0.1 4242 path/to/file.dcm
+```
+
+### Using REST API (upload from disk):
+```bash
+curl -u orthanc:orthanc -X POST http://localhost:8042/instances \
+     -H "Content-Type: application/dicom" \
+     --data-binary @~/dicom_test/data/693_UNCI.dcm
+```
+
+
+## 🧼 Modify Tags in a DICOM File (Before Sending)
+
+### Change Patient Name:
+```bash
+dcmodify -i "(0010,0010)=NewName" ~/dicom_test/data/693_UNCI.dcm
+```
+
+### Change Patient ID:
+```bash
+dcmodify -i "(0010,0020)=NEW_ID_123" file.dcm
+```
+
+⚠️ You can also script mass changes before upload.
+
+
+
+## ❌ Delete a DICOM Instance (via REST API)
+
+### Get Instance ID (example):
+```bash
+curl -u orthanc:orthanc http://localhost:8042/instances
+```
+
+### Then delete:
+```bash
+curl -u orthanc:orthanc -X DELETE http://localhost:8042/instances/<InstanceID>
+```
+
+You can also delete **series**, **studies**, or **patients** using their respective endpoints.
+
+
+
+## 📑 List Orthanc Resources
+
+| Action                 | Command                                                                 |
+|------------------------|-------------------------------------------------------------------------|
+| List all patients      | `curl -u orthanc:orthanc http://localhost:8042/patients`                |
+| List studies           | `curl -u orthanc:orthanc http://localhost:8042/studies`                 |
+| List series            | `curl -u orthanc:orthanc http://localhost:8042/series`                  |
+| List instances         | `curl -u orthanc:orthanc http://localhost:8042/instances`               |
+| View full tags         | `curl -u orthanc:orthanc http://localhost:8042/instances/<id>/tags`     |
+
+
+
+## 🔍 Search DICOM by Patient Name (wildcard match)
+
+### Using REST API:
+```bash
+curl -u orthanc:orthanc -X POST http://localhost:8042/tools/find \
+  -H "Content-Type: application/json" \
+  -d '{"Level":"Patient", "Query":{"PatientName":"CQ*"}}'
+```
+
+### Using `findscu` (DCMTK):
+```bash
+findscu -v -S -k QueryRetrieveLevel=PATIENT -k PatientName="CQ*" 127.0.0.1 4242
+```
+
+
+## 🧪 Anonymize a DICOM Instance via REST
+
+```bash
+INSTANCE_ID=$(curl -s -u orthanc:orthanc http://localhost:8042/instances | jq -r '.[0]')
+
+curl -u orthanc:orthanc -X POST \
+  http://localhost:8042/instances/$INSTANCE_ID/anonymize \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+Returns the ID of a **new anonymized** instance in Orthanc.
+
+
+## 🔁 Download an Image from Orthanc
+
+Download a DICOM instance:
+```bash
+curl -u orthanc:orthanc http://localhost:8042/instances/<id>/file > download.dcm
+```
+
+Download as PNG (if PNG plugin or DICOMWeb is enabled):
+```bash
+curl -u orthanc:orthanc http://localhost:8042/instances/<id>/preview > image.png
+```
+
+
+## 🛠 Other Useful Actions
+
+| Action                                | Command                                                                 |
+|---------------------------------------|-------------------------------------------------------------------------|
+| Get system info                       | `curl -u orthanc:orthanc http://localhost:8042/system`                  |
+| View Orthanc configuration (live)     | `curl -u orthanc:orthanc http://localhost:8042/configuration`           |
+| Reconstruct missing series            | `curl -u orthanc:orthanc -X POST http://localhost:8042/tools/reconstruct` |
+| Create a dummy DICOM                  | `curl -u orthanc:orthanc -X POST http://localhost:8042/tools/create-dicom -d '{}'` |
+
+
+
+## 🔒 Pro tip: Secure Orthanc before going live!
+
+Edit `Orthanc.json` or pass with Docker:
+```json
+"AuthenticationEnabled": true,
+"RegisteredUsers": {
+  "orthanc": "yourStrongPassword"
+}
+```
+
+Or add basic auth to all endpoints:
+```bash
+curl -u orthanc:yourStrongPassword ...
 ```
 
 ---
