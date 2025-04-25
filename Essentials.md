@@ -318,13 +318,11 @@ wget -c http://example.com/file.zip    # Continue interrupted download
 > Unlike `curl`, `wget` is mainly for downloading files and supports recursive downloads with `-r`.
 
 
-
 ### 🔹 ping – Test connectivity to a host
 ```bash
 ping google.com                        # Check if host is reachable
 ping -c 4 google.com                   # Limit to 4 packets
 ```
-
 
 
 ### 🔹 ifconfig / ip – Network configuration
@@ -333,16 +331,36 @@ ifconfig                               # Show network interfaces (older, may nee
 ip a                                   # Modern alternative to ifconfig
 ip r                                   # Show routing table
 ```
-
 > On modern Linux (Ubuntu), prefer `ip` commands over `ifconfig`.
 
 
 ### 🔹 netstat / ss – Check open ports and sockets
 ```bash
 netstat -tuln                          # List listening ports (requires `net-tools`)
-ss -tuln                               # Faster and more modern replacement for netstat
+ss -tulnp                              # List active TCP/UDP listening ports with process names
 ```
 
+#### 🔧 ss Common Flags
+| Flag    | Description |
+|---------|-------------|
+| `-t`    | Show TCP sockets |
+| `-u`    | Show UDP sockets |
+| `-l`    | Show only listening ports |
+| `-n`    | Show numerical IPs and ports (skip DNS lookup) |
+| `-p`    | Show process ID and name associated |
+
+> `ss` is faster, more modern, and installed by default on newer systems. Use it to debug services and open ports.
+
+
+### 🔹 lsof – List open files and network connections
+```bash
+sudo lsof -i :PORT
+```
+- Example:
+```bash
+sudo lsof -i :19999
+```
+> Shows which process is using a specific port. Useful when services conflict or debugging docker ports.
 
 
 ### 🔹 nslookup / dig – DNS tools
@@ -352,129 +370,20 @@ dig example.com                        # More detailed DNS lookup
 ```
 
 
-
 ### 🔹 traceroute – Show the path to a remote host
 ```bash
 traceroute example.com                 # Trace the route packets take
 ```
-
 > Might require installation: `sudo apt install traceroute`
 
 
-
 ### 🛠 Tip:
-Use `curl` or `wget` in Dockerfiles, bash scripts, or system setup scripts to automate downloads and API calls.
+- Use `curl` or `wget` in Dockerfiles, bash scripts, or system setup scripts to automate downloads and API calls.
+- Use `ss`, `lsof`, and `ip` when troubleshooting connectivity issues.
+- Regularly monitor ports if you're running public-facing services (like Nextcloud, Netdata, Portainer...).
 
 ---
 
-## 🔌 Scheduled Power Management (shutdown & rtcwake)
-
-Automate daily power cycles — shut down at night and wake up in the morning — with full logging.
-
-### 🔹 rtcwake – Schedule automatic wake-up
-```bash
-sudo rtcwake -m off -s 60
-# Shut down and auto-start after 60 seconds
-
-sudo rtcwake -m off -t $(date -d '08:00 tomorrow' +%s)
-# Shut down now and wake at 08:00 tomorrow
-
-sudo rtcwake -m off -t $(date -d '+30 minutes' +%s)
-# Shut down now and wake in 30 minutes
-```
-
-> `-m off` = poweroff  
-> `-t` = use a UNIX timestamp  
-> `-s` = use seconds (e.g. 60 = 1 min)  
-
-
-### 🔹 Check RTC capabilities
-```bash
-cat /proc/driver/rtc
-```
-
-Check for `alarm_IRQ: yes` and inspect current RTC and alarm time.
-
-
-### 🔹 Daily shutdown + wake-up script
-
-**File:** `/usr/local/bin/wakeup_shutdown.sh`
-
-```bash
-#!/bin/bash
-LOGFILE="/var/log/my_wakeup.log"
-
-{
-  echo "==== $(date) ===="
-  echo "Scheduled wakeup at 08:00 tomorrow"
-  echo "UNIX timestamp: $(date -d '08:00 tomorrow' +%s)"
-  timedatectl
-} >> "$LOGFILE"
-
-/usr/sbin/rtcwake -m off -t $(date -d '08:00 tomorrow' +%s)
-```
-
-Make executable:
-```bash
-sudo chmod +x /usr/local/bin/wakeup_shutdown.sh
-```
-
-
-### 🔹 Root cron job (shutdown at midnight)
-```bash
-sudo crontab -e
-```
-
-Add:
-```cron
-0 0 * * * /usr/local/bin/wakeup_shutdown.sh
-```
-
-
-### 🔹 Boot-time logger (record actual wake-up time)
-
-**File:** `/usr/local/bin/log_wakeup_time.sh`
-
-```bash
-#!/bin/bash
-
-LOGFILE="/var/log/my_wakeup.log"
-
-{
-  echo "==== System woke up at: $(date) ===="
-  timedatectl
-} >> "$LOGFILE"
-```
-
-Make executable:
-```bash
-sudo chmod +x /usr/local/bin/log_wakeup_time.sh
-```
-
-
-### 🔹 systemd service to log wake-up time
-
-**File:** `/etc/systemd/system/log-wakeup.service`
-
-```ini
-[Unit]
-Description=Log system wake-up time to my_wakeup.log
-After=multi-user.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/bin/log_wakeup_time.sh
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable it:
-```bash
-sudo systemctl enable log-wakeup.service
-```
-
----
 
 ### ✅ Result
 
