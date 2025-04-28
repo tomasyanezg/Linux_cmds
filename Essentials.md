@@ -219,20 +219,36 @@ docker run -d --name myapp -p 8080:80 image        # Run in detached mode with p
 
 ### 🔹 Exec & Inspect
 ```bash
-docker exec -it mycontainer bash                 # Open a shell inside running container
-docker exec -it mycontainer cat /path/to/file    # Run a command inside container
-docker logs mycontainer                          # Show container logs
-docker inspect mycontainer                       # Detailed info (JSON)
+docker exec -it mycontainer bash                  # Open a shell inside running container
+docker exec -it mycontainer cat /path/to/file      # Run a command inside container
+docker exec -u www-data mycontainer php occ files:scan --all  # Run a command as a specific user inside container (Nextcloud example)
+docker logs mycontainer                           # Show container logs
+docker inspect mycontainer                        # Detailed info (JSON)
 ```
 
 ### 🔹 Volumes & Bind Mounts
 ```bash
-docker volume ls                                 # List volumes
-docker volume create myvolume                    # Create volume
-docker run -v myvolume:/data image               # Mount volume
-docker run -v $(pwd)/data:/app/data image        # Bind local folder into container
+docker volume ls                                  # List volumes
+docker volume create myvolume                     # Create volume
+docker run -v myvolume:/data image                # Mount volume
+docker run -v $(pwd)/data:/app/data image         # Bind local folder into container
 ```
 
+### 🔹 Useful Options for `docker exec`
+```bash
+-i                         # Keep STDIN open (interactive)
+-t                         # Allocate a terminal (TTY)
+-u USER                    # Run command as a specific user inside container
+--env VAR=value            # Set environment variable for command
+--workdir /path            # Start in specific directory inside container
+--detach                   # Run command in background (detached)
+```
+
+Example:
+```bash
+docker exec -u www-data nextcloud-app php occ files:scan --all
+# Run php occ files:scan --all inside 'nextcloud-app' container as 'www-data' user.
+```
 
 
 ## ✅ Tips
