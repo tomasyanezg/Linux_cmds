@@ -164,6 +164,38 @@ grep -iE "fail|error|critical" logs.txt
 > 💡 Tip: Combine with `less` or `tail -f` for log monitoring  
 > Example: `tail -f log.txt | grep -i error`
 
+### 🔹 User Switching & App Management
+```bash
+su -s /bin/bash www-data            # Switch to 'www-data' user with Bash shell
+sudo -u www-data php occ status      # Run Nextcloud's occ command as www-data user (without switching shell)
+```
+
+#### 🛠 What it means:
+- `su -s /bin/bash www-data`  
+  → Become the `www-data` user and open a Bash session.  
+  Useful for running application commands (e.g., Nextcloud) with correct permissions.
+- `php occ`  
+  → `occ` is the **Nextcloud command-line tool** (OwnCloud Console).  
+  You run it with `php occ [command]` to manage the Nextcloud server:
+    - Check system status
+    - Scan for new files
+    - Manage users, apps, settings
+    - Perform upgrades
+    - Fix errors
+- `sudo -u www-data php occ`  
+  → Quick alternative if you don't want to fully switch users: run one single command as `www-data`.
+
+#### 🔹 Common occ examples:
+```bash
+php occ status                       # Show basic Nextcloud info
+php occ files:scan --all             # Rescan all user files (sync filesystem with DB)
+php occ maintenance:mode --on        # Enable maintenance mode
+php occ maintenance:mode --off       # Disable maintenance mode
+php occ app:list                     # List installed apps
+```
+
+> 💡 Tip: Always run `occ` commands **as the www-data user**, either by switching (`su`) or using `sudo -u www-data`.
+
 
 ---
 
