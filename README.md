@@ -79,11 +79,6 @@ ssh -p 2222 user@remote-ip
 - Write brief descriptions above each code block  
 - Organize by topic and use links for navigation
 
----
-
-## 🔄 Contributing (for future me)
-
-If I ever make this public, contributions are welcome via PRs and Issues!
 
 ---
 
